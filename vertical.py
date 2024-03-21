@@ -6,18 +6,20 @@ import os
 from FormatTime import get_time
 import csv
 
-img_number = 300  # 图片数量
-line_segment_number = 20  # 每条线线段的个数的最大值
+img_number = 30  # 图片数量
+line_segment_number = 30  # 每条线线段的个数的最大值
 x_axis_len = 100  # 坐标轴的范围
 y_axis_len = 100  # 坐标轴的范围
 img_size = (6, 4)  # 600 * 400
-x_max_scale = 6  # 角度为0的时候线段长度随机取值为[0, x_axis_len / x_scale] 值越大线段长度越小
-x_min_scale = 10
-y_max_scale = 6  # 角度为90的时候线段长度随机取值为[0, y_axis_len / y_scale] 值越大线段长度越小
-y_min_scale = 10
-angle_list = [0, 90]  # 可选角度
+x_min_scale = 16  # 角度为0的时候线段长度随机取值为[0, x_axis_len / x_scale] 值越大线段长度越小
+x_max_scale = 24
+y_min_scale = 16  # 角度为90的时候线段长度随机取值为[0, y_axis_len / y_scale] 值越大线段长度越小
+y_max_scale = 24
+slash_scale = 2  # 画斜线时长度扩大
+slash_prob = 0.1  # 斜线在随机时的概率
 
-img_dpi = 100
+img_dpi = 100  # 图像dpi值，目前无意义
+
 # 起点x轴偏移量
 x_axis_offset_lower = 5
 x_axis_offset_upper = 15
@@ -25,7 +27,10 @@ x_axis_offset_upper = 15
 y_axis_offset_lower = 5
 y_axis_offset_upper = 15
 
-# angle_list_weight = [0.45, 0.45, 0.1]
+x_lower = x_axis_len / x_max_scale
+x_upper = x_axis_len / x_min_scale
+y_lower = y_axis_len / y_max_scale
+y_upper = y_axis_len / y_min_scale
 
 # 图像计数
 filename_cnt = 1
@@ -70,11 +75,11 @@ def save_img():
     filename = img_folder_path + f"{filename_cnt:03d}.png"
 
     # 隐藏坐标轴
-    # ax.set_frame_on(False)
-    # ax.set_xticks([])
-    # ax.set_yticks([])
+    ax.set_frame_on(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
 
-    plt.show()
+    # plt.show()
 
     # 保存图像为PNG格式
     plt.savefig(filename, format='png')
@@ -121,6 +126,8 @@ def get_pix_coor(line_segment):
     return zip(x_pix, y_pix)
 
 
+
+
 if __name__ == '__main__':
     make_dir(img_folder_path)
     make_dir(corr_folder_path)
@@ -140,32 +147,54 @@ if __name__ == '__main__':
 
         last_choice = -1
 
-        for _ in range(line_segment_number):
-            angle = angle_list[_ % 2]
+        angle_list = [0, 90, -1]  # 可选角度
+        angle_weight = [(1 - slash_prob) / 2, (1 - slash_prob) / 2, slash_prob]  # 随机权重
 
-            # 均匀分布：
-            if angle == 0:
-                length = random.uniform(x_axis_len / x_min_scale, x_axis_len / x_max_scale)
-                if length + point[0] > x_axis_len:
-                    length = x_axis_len - point[0]
-            else:
-                length = random.uniform(x_axis_len / y_min_scale, y_axis_len / y_max_scale)
-                if length + point[1] > y_axis_len:
-                    length = y_axis_len - point[1]
+        for _ in range(line_segment_number):
+            angle = random.choices(angle_list, weights=angle_weight)[0]
+
+            if angle == 0 or angle == 90:  # 画水平竖直线的情况
+                # 均匀分布：
+                if angle == 0:
+                    length = random.uniform(x_axis_len / x_max_scale, x_axis_len / x_min_scale)
+                    if length + point[0] > x_axis_len:  # 超过x_axis_len的部分不画
+                        length = x_axis_len - point[0]
+                else:
+                    length = random.uniform(y_axis_len / y_max_scale, y_axis_len / y_min_scale)
+                    if length + point[1] > y_axis_len:
+                        length = y_axis_len - point[1]
+
+                angle_list = [0, 90, -1]  # 可选角度
+                angle_weight = [(1 - slash_prob) / 2, (1 - slash_prob) / 2, slash_prob]  # 随机权重
+
+                if length == 0:
+                    break
+                line = LineSegment(point, length, angle)
+            else:  # 画斜线的情况
+                length_x = random.uniform(x_lower, x_upper * slash_scale)
+                length_y = random.uniform(y_lower, y_upper * slash_scale)
+
+                if length_x + point[0] > x_axis_len:
+                    length_x = x_axis_len - point[0]
+                if length_y + point[1] > y_axis_len:
+                    length_y = y_axis_len - point[1]
+
+                angle_list = [0, 90]
+                angle_weight = [0.5, 0.5]
+                if length_x == 0 and length_y == 0:
+                    break  # 无意义的画线
+                line = LineSegment(point, (length_x + point[0], length_y + point[1]))
+
 
             # # 正态分布：
             # if angle == 0:
-            #     length = get_random_normal(1, x_axis_len / x_max_scale)
+            #     length = get_random_normal(1, x_axis_len / x_min_scale)
             #     if length + point[0] > x_axis_len:
             #         length = x_axis_len - point[0]
             # else:
-            #     length = get_random_normal(1, y_axis_len / y_max_scale)
+            #     length = get_random_normal(1, y_axis_len / y_min_scale)
             #     if length + point[1] > y_axis_len:
             #         length = y_axis_len - point[1]
-
-            if length == 0:
-                break
-            line = LineSegment(point, length, angle)
 
             plot(line)
             point = line.point2
