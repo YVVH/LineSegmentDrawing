@@ -126,8 +126,6 @@ def get_pix_coor(line_segment):
     return zip(x_pix, y_pix)
 
 
-
-
 if __name__ == '__main__':
     make_dir(img_folder_path)
     make_dir(corr_folder_path)
@@ -184,7 +182,6 @@ if __name__ == '__main__':
                 if length_x == 0 and length_y == 0:
                     break  # 无意义的画线
                 line = LineSegment(point, (length_x + point[0], length_y + point[1]))
-
 
             # # 正态分布：
             # if angle == 0:
