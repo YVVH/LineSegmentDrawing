@@ -11,10 +11,10 @@ line_segment_number = 30  # 每条线线段的个数的最大值
 x_axis_len = 100  # 坐标轴的范围
 y_axis_len = 100  # 坐标轴的范围
 img_size = (6, 4)  # 600 * 400
-x_min_scale = 16  # 角度为0的时候线段长度随机取值为[0, x_axis_len / x_scale] 值越大线段长度越小
-x_max_scale = 24
-y_min_scale = 16  # 角度为90的时候线段长度随机取值为[0, y_axis_len / y_scale] 值越大线段长度越小
-y_max_scale = 24
+x_min_scale = 12  # 角度为0的时候线段长度随机取值为[0, x_axis_len / x_scale] 值越大线段长度越小
+x_max_scale = 30
+y_min_scale = 12  # 角度为90的时候线段长度随机取值为[0, y_axis_len / y_scale] 值越大线段长度越小
+y_max_scale = 30
 slash_scale = 2  # 画斜线时长度扩大
 slash_prob = 0.1  # 斜线在随机时的概率
 

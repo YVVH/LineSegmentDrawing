@@ -11,6 +11,8 @@ class LineSegment:
     x2:终点横坐标
     slope:斜率
     """
+
+    # 支持两种构造方法
     def __init__(self, *args):
         # 使用端点构造
         if len(args) == 2:
@@ -25,8 +27,10 @@ class LineSegment:
             elif delta_x == 0:  # 避免除以0
                 if delta_y > 0:
                     self.angle = 90
+                    self.slope = float('inf')
                 elif delta_y < 0:
                     self.angle = -90
+                    self.slope = float('-inf')
             else:
                 self.slope = delta_y / delta_x
                 self.angle = math.degrees(math.atan(self.slope))
@@ -37,7 +41,7 @@ class LineSegment:
             x1, y1 = self.point1
             if 0 < self.angle < 90:
                 self.slope = math.tan(math.radians(self.angle))
-                y2 = y1 + math.sin(math.radians(self.angle)) * delta
+                y2 = y1 + self.slope * delta
                 self.point2 = (x1 + delta, y2)
             elif self.angle == 90:
                 y2 = y1 + delta
