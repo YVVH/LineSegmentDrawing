@@ -1,15 +1,9 @@
-import matplotlib.pyplot as plt
+array = [x for x in range(5)]
 
-from LineSegment import LineSegment
 
-img_size = (6, 4)
+def fun(arr):
+    arr = [x for x in range(6)]  # 将新值扩展到列表中
 
-fig, ax = plt.subplots()
 
-ax.axis([-1, 101, -1, 101])
-
-line = LineSegment((0, 0), 100, 0)
-
-points, = ax.plot((-100, 100), (-100, 100), '-')
-
-plt.show()
+fun(array)
+print(array)
