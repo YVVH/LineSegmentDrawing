@@ -5,28 +5,6 @@ import numpy as np
 import os
 from FormatTime import get_time
 from CoordinateSave import save_csv
-from noise.noise_circle import Circle
-from noise.noise_triangle import Triangle
-from noise.noise_text import X, Character
-from noise.noise_common import MixedNoise
-
-noise_number = 20  # 噪声数量
-noise_x_offset_lower = -6
-noise_x_offset_upper = 6
-noise_y_offset_lower = -6
-noise_y_offset_upper = 6
-circle_radius = 5  # 圆形的半径
-triangle_length = 12  # 三角形中心点到端点的距离
-X_length = 5  # 叉号的长度
-font_size = 12  # 字体大小
-character_list = ['上', '中', '下']  # 随机文本库
-character_weight = [0.33, 0.33, 0.34]  # 随机文本权重
-noise_type_list = [0, 1, 2, 3, 4]  # 0圆 1三角形 2X 3文本 4混合
-noise_type_weight = [0.2, 0.2, 0.2, 0.2, 0.2]  # 噪声权重
-noise_thickness_para = 1500
-mixed_noise_x_offset = 8
-mixed_noise_y_offset = -8
-
 
 img_number = 30  # 图片数量
 line_segment_number = 30  # 每条线线段的个数的最大值
@@ -40,9 +18,7 @@ slash_min_scale, slash_max_scale = 1, 2  # 画斜线时的长度系数的随机�
 slash_prob = 0.02  # 随机到画斜线的概率
 x_lower_ratio, x_upper_ratio, y_lower_ratio, y_upper_ratio = 0.05, 0.15, 0.05, 0.15  # 子图边缘与其所在轴的边缘之间的距离比例的取值范围
 
-
 thickness = 1 + int(max(width, height) / line_thickness_para)  # 线段宽度
-noise_thickness = 1 + int(max(width, height) / noise_thickness_para)  # 噪声宽度
 
 # 图像计数
 filename_cnt = 1
@@ -76,45 +52,6 @@ def save_img():
     filename = img_folder_path + f"{filename_cnt:03d}.png"
 
     cv2.imwrite(filename, image)
-
-
-def add_noise(line_segment_lists, img, noise_number):
-    global image
-    for _ in range(noise_number):
-        noise_type = random.choices(noise_type_list, weights=noise_type_weight)[0]
-        line_segment = random.choice(line_segment_lists)
-        x, y = random.choice(line_segment.coor_list)
-        x, y = round(x), round(y)
-        x_offset = random.randint(noise_x_offset_lower, noise_x_offset_upper)
-        y_offset = random.randint(noise_y_offset_lower, noise_y_offset_upper)
-        center = (x + x_offset, axis_convert(y + y_offset))
-        if noise_type == 0:
-            noise = Circle(center, radius=circle_radius)
-            noise.draw(img, (0, 0, 0), thickness=noise_thickness)
-        elif noise_type == 1:
-            noise = Triangle(center, length=triangle_length)
-            noise.draw(img, (0, 0, 0), thickness=noise_thickness)
-        elif noise_type == 2:
-            noise = X(center, length=X_length)
-            noise.draw(img, (0, 0, 0), thickness=noise_thickness)
-        elif noise_type == 3:  # 文本图形容易偏离线段
-            center = (x + x_offset / 6, axis_convert(y + 1 - x_offset / 6))
-            text = random.choices(character_list, weights=character_weight)[0]
-            noise = Character(center, text=text, font_size=font_size)
-            image = noise.draw(img, (0, 0, 0))
-            img = image
-        elif noise_type == 4:  # 混合噪声（带文字），先预处理图形和文字噪声，再进行结合
-            text = random.choices(character_list, weights=character_weight)[0]
-            noise_mixed_type = random.randint(0, 2)
-            center_temp = (center[0] + mixed_noise_x_offset, center[1] + mixed_noise_y_offset)  # 文字坐标推导
-            noise_text = Character(center_temp, text=text, font_size=font_size)
-            if noise_mixed_type == 0:
-                noise_graph = Circle(center, radius=circle_radius)
-            else:
-                noise_graph = Triangle(center, length=triangle_length)
-            noise = MixedNoise(center, noise_graph, noise_text)
-            image = noise.draw(img, thickness=noise_thickness)
-            img = image
 
 
 if __name__ == '__main__':
@@ -191,7 +128,6 @@ if __name__ == '__main__':
             plot(line)
             point = line.point2
             line_segment_lists.append(line)
-        add_noise(line_segment_lists, image, noise_number)
         filename = corr_folder_path + f"{filename_cnt:03d}.csv"
         save_csv(line_segment_lists, filename, 1, axis_convert)
         save_img()

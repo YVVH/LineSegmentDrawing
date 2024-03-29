@@ -3,6 +3,7 @@ from LineSegment import LineSegment
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import math
+from noise.noise_circle import Circle
 
 
 class X:
@@ -33,6 +34,38 @@ class X:
         cv2.line(image, start_point, end_point3, color, thickness)
         cv2.line(image, start_point, end_point4, color, thickness)
 
+    def draw_X_plus(self, image, color, thickness=1):
+        # 从起点开始，延申四条线
+        delta_x = self.length * math.sin(math.pi / 4)
+        line1 = LineSegment(self.center, -delta_x, 135)
+        line2 = LineSegment(self.center, -delta_x, -135)
+        line3 = LineSegment(self.center, delta_x, 45)
+        line4 = LineSegment(self.center, delta_x, -45)
+
+        # 绘制线段
+        start_point = self.center
+        end_point1 = tuple(round(x) for x in line1.point2)
+        end_point2 = tuple(round(x) for x in line2.point2)
+        end_point3 = tuple(round(x) for x in line3.point2)
+        end_point4 = tuple(round(x) for x in line4.point2)
+        cv2.line(image, start_point, end_point1, color, thickness)
+        cv2.line(image, start_point, end_point2, color, thickness)
+        cv2.line(image, start_point, end_point3, color, thickness)
+        cv2.line(image, start_point, end_point4, color, thickness)
+
+        # 画点
+        mid_point1 = (round((line1.point2[0] + line2.point2[0]) / 2), round((line1.point2[1] + line2.point2[1]) / 2))
+        mid_point2 = (round((line2.point2[0] + line4.point2[0]) / 2), round((line2.point2[1] + line4.point2[1]) / 2))
+        mid_point3 = (round((line3.point2[0] + line4.point2[0]) / 2), round((line3.point2[1] + line4.point2[1]) / 2))
+        mid_point4 = (round((line1.point2[0] + line3.point2[0]) / 2), round((line1.point2[1] + line3.point2[1]) / 2))
+        c1 = Circle(mid_point1, radius=1)
+        c2 = Circle(mid_point2, radius=1)
+        c3 = Circle(mid_point3, radius=1)
+        c4 = Circle(mid_point4, radius=1)
+        c1.draw(image, color, thickness)
+        c2.draw(image, color, thickness)
+        c3.draw(image, color, thickness)
+        c4.draw(image, color, thickness)
 
 class Character:
     def __init__(self, center, text, font_size):
